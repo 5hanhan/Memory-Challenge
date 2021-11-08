@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>小游戏第一关</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            list-style: none;perspective: 1500px;
+        }
+        #main{
+            position: fixed;
+            width: 100%;
+            height: 936px;
+            background: url("img/background.jpg") no-repeat 0 0 / 100% 100%;
+        }
+        .wrap{
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            margin: 0 auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        ul{
+            margin: 0 auto;
+            padding-bottom: 50px;
+            padding-top: 100px;
+            width: 1200px;
+            height: 540px;
+            position: relative;
+        }
+        ul > li{
+            width: 180px;
+            height: 260px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            transition: all 1s;
+            padding: 100px 10px 0 10px;
+        }
+        .card{
+            width: 180px;
+            height:260px;
+            position: relative;
+            left: 0;
+            top: 0;
+            transform:rotate3d(0,0,0,0deg);
+            transform-style: preserve-3d;
+            transition: all 1s;
+        }
+        .card div{
+            position: absolute;
+            width: 180px;
+            height: 260px;
+            top:0;
+            left:0;
+            backface-visibility: hidden;
+
+        }
+        .card .front{
+            transform: rotateY(180deg);
+            border: 1px solid;
+        }
+        .card .front img{
+            width: 100%;
+            height:100%;
+        }
+        .card .back{
+            background: url("img/back.png") no-repeat center center / cover;
+        }
+        #times{
+            background: url("img/logo.png") no-repeat 0 0 / 100% 100%;
+            float: left;
+            width: 200px;
+            height: 200px;
+            position: fixed;
+            left: 50px;
+            color: #faff3b;
+            font-size: 100px;
+            font-weight: bolder;
+            text-align: center;
+            line-height: 200px;
+        }
+        .btn{
+            width:100%;
+            height: 50px;
+            margin: 0 auto;
+            position: fixed;
+            text-align: center;
+        }
+        .btn div{
+            width: 800px;
+            height: 50px;
+
+            position: fixed;
+            left:50%;
+            margin-left: -400px;
+            text-align: center;
+        }
+        button{
+            width: 150px;
+            height: 50px;
+            margin: 0 50px;
+            color: #da8e3c;
+            font-weight: 700;
+            font-size: large;
+            background: url("img/button.png") no-repeat 0 0 / 100% 100%;
+        }
+        #start{
+            width: 300px;
+            height: 80px;
+            position: fixed;
+            top: -250px;
+            left:50%;
+            margin-left: -150px;
+            font-size: larger;
+            font-weight: bolder;
+        }
+        #avengers{
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            height: 200px;
+            margin: 20px 0 0 0;
+            background: url("img/avengers.png") no-repeat center center / 500px 200px;
+            color: #da8e3c;
+            font-weight: bolder;
+            font-size: 60px;
+            line-height: 200px;
+        }
+        #next{
+            position: fixed;
+            float: right;
+            right: 150px;
+            bottom: 100px;
+        }
+        #num{
+            position: fixed;
+            width: 100%;
+            color: red;
+            font-size: 100px;
+            font-weight: 900;
+            text-align: center;
+            top: 200px;
+        }
+    </style>
+</head>
+<body>
+<div id="main">
+    <div class="wrap">
+        <div id="num">第&nbsp;&nbsp;一&nbsp;&nbsp;关</div>
+        <ul>
+        </ul>
+        <div id="avengers">
+            <span>剩余点击数：<span id="onclickTimes"></span></span>
+        </div>
+        <div id="times"></div>
+        <div class="btn">
+            <button onclick="startGame()" id="start">开始游戏</button>
+        </div>
+        <button onclick="window.location='小游戏第二关.html'" id="next">下一关：第二关</button>
+    </div>
+</div>
+<script>
+    var wrap =document.getElementsByClassName("wrap");
+    var ul = document.getElementsByTagName("ul");
+    var li = document.getElementsByTagName("li");
+    var card =document.getElementsByClassName("card");
+    var btn = document.getElementsByClassName("btn");
+    var btns = document.getElementsByTagName("button");
+    var times = document.getElementById("times");
+    var btnDiv = document.getElementsByClassName("btnDiv");
+    var arr = [0,1,2,3,4,5,6,7,8,9,10,11];
+    var timer;//计时器
+    function startGame(){
+        //创建12张牌
+        for(var i =0;i < 12;i++){
+            var li = document.createElement("li");
+            li.innerHTML  = "<div class='card' onclick='cardOnclick("+i+")'></div>";
+            ul[0].appendChild(li);
+            var front = document.createElement("div");
+            front.className = "front";
+            var img = document.createElement("img");
+            img.src = "img/" + i%6 + ".png";
+            front.appendChild(img);
+            card[i].appendChild(front);
+            var back = document.createElement("div");
+            back.className = "back";
+            card[i].appendChild(back);
+        }
+        for(var i = 0;i < card.length;i++){
+            card[i].flag = 1;
+        }
+        var num = document.getElementById("num");
+        wrap[0].removeChild(num);
+        //去掉开始按钮，增加发牌按钮
+        btn[0].removeChild(btns[0]);
+        var div = document.createElement("div");
+        div.className = "btnDiv";
+        div.innerHTML = "<button onclick='setCard(),startTime()'>发牌</button>";
+        btn[0].appendChild(div);
+    }
+    function setCard(){
+        shuffle();
+        onclickTimes.innerHTML = onclickNum;
+        for(var i = 0;i < card.length;i++){
+            card[i].flag = 0;
+        }
+        //去掉发牌按钮，增加洗牌和结束游戏按钮
+        btn[0].removeChild(btnDiv[0]);
+        var div = document.createElement("div");
+        div.innerHTML = "<button onclick='shuffle()'>洗牌</button><button onclick='endGame(),endTime()'>结束游戏</button><button onclick='againGame()'>重新开始</button>";
+        btn[0].appendChild(div);
+        lookTime();
+        btns[2].disabled = true;
+        setTimeout(function () {
+            btns[2].disabled = false;
+        },4000);
+    }
+    function shuffle() {
+        //打乱牌序
+        for(var i = arr.length - 1;i >= 0;i--){
+            var random = Math.floor(Math.random() * i);
+            var temp = arr[i];
+            arr[i] = arr[random];
+            arr[random] = temp;
+        }
+        //按照打乱的牌序进行移动，完成洗牌
+        for(var i = 0;i < arr.length;i++){
+            li[arr[i]].style.left = 200*(i%6) + "px";
+            li[arr[i]].style.top = 280*Math.floor(i/6) + "px";
+        }
+    }
+    var count = false;//设置用来表示有无未配对的牌是正面，false为无
+    var m;//存放未配对但已经翻正的牌的序号
+    var newArr = [];//建立数组，存放已经配对完成的牌的序号
+    var maxClk = 20;//最大点击数
+    var onclickNum = maxClk;//点击剩余次数
+    var onclickTimes = document.getElementById("onclickTimes");
+    function cardOnclick(n) {
+        if(onclickNum == 0){
+            if(newArr.length == 12){
+                alert("You win!进入下一关！");
+                window.location = "小游戏第二关.html";
+            }else{
+                alert("You lose!游戏重新开始!");
+                againGame();
+            }
+        }
+        if(newArr.indexOf(n) == -1 && n != m && card[n].flag == 0){
+            onclickNum--;
+            onclickTimes.innerHTML = onclickNum;
+            card[n].style.transform = "rotate3d(0,1,0,180deg)";//牌面翻转
+            card[n].flag = 1;
+            if(count){
+                //判断未配对已翻正的牌与此次翻正的牌是否配对，加入newArr
+                if(n%6 == m%6){
+                    newArr.push(n);
+                    newArr.push(m);
+                    m = -1;//将经过操作的牌序清空
+                }else{//未配对成功则将两张牌翻转
+                    setTimeout((function (m) {
+                        return function () {
+                            card[n].style.transform = "rotate3d(0,1,0,0deg)";
+                            card[m].style.transform = "rotate3d(0,1,0,0deg)";
+                            card[n].flag = 0;
+                            card[m].flag = 0;
+                        }
+                    })(m),500)//延迟0.5秒将未配对成功的牌进行翻转
+                }
+            } else{
+                m = n;
+            }
+            count = !count;
+        }
+        if(newArr.length == 12){
+            alert("You win!进入下一关！");
+            window.location = "小游戏第二关.html";
+        }
+    }
+    function endGame() {
+        if(newArr.length == 12){
+            alert("You win!进入下一关！");
+            window.location = "小游戏第二关.html";
+        }else{
+            alert("You lose!游戏重新开始!");
+            newArr = [];
+            ul[0].innerHTML = "";
+            btn[0].innerHTML = "<button onclick=\"startGame()\" id=\"start\">开始游戏</button>";
+            var div = document.createElement("div");
+            div.id = "num";
+            div.innerHTML = "第&nbsp;&nbsp;一&nbsp;&nbsp;关";
+            wrap[0].appendChild(div);
+        }
+        onclickNum = maxClk;
+        onclickTimes.innerHTML = onclickNum;
+    }
+    function againGame() {
+        for(var i = 0;i < card.length;i++){
+            card[i].style.transform = "rotate3d(0,1,0,0deg)";
+        }
+        for(var i = 0;i < card.length;i++){
+            card[i].flag = 0;
+        }
+        btns[2].disabled = true;
+        setTimeout(function () {
+            btns[2].disabled = false;
+        },4000);
+        newArr = [];
+        shuffle();
+        endTime();
+        lookTime();
+        startTime();
+        onclickNum = maxClk;
+        onclickTimes.innerHTML = onclickNum;
+    }
+    function startTime() {
+        var sec = -4;
+        timer = setInterval(function(){
+            sec++;
+            if(sec >= 0){
+                times.innerHTML = sec;
+            }
+        },1000)
+    }
+    function endTime() {
+        clearInterval(timer);
+        times.innerHTML = "";
+    }
+    function lookTime() {
+        for(var i = 0;i < card.length;i++){
+            card[i].style.transform = "rotate3d(0,1,0,180deg)";
+            card[i].flag = 1;
+        }
+        setTimeout(function () {
+            for(var i = 0;i < card.length;i++){
+                card[i].style.transform = "rotate3d(0,1,0,0deg)";
+                card[i].flag = 0;
+            }
+        },3000);
+    }
+</script>
+</body>
+</html>
